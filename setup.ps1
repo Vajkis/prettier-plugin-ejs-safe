@@ -5,7 +5,7 @@
 
 $ErrorActionPreference = "Stop"
 $PLUGIN_NAME = "prettier-plugin-ejs-safe"
-$CONFIG_PATH = "$HOME\.prettierrc.json"
+$CONFIG_PATH = "$HOME\.prettierrc"
 
 Write-Host ""
 Write-Host "Installing $PLUGIN_NAME..." -ForegroundColor Cyan
@@ -19,12 +19,29 @@ $PLUGIN_PATH = "$(npm root -g)\$PLUGIN_NAME\index.js" -replace "\\", "/"
 
 # 3. Write config without BOM — Prettier rejects UTF-8 BOM in JSON files
 $config = "{
-  `"semi`": true,
-  `"singleQuote`": true,
+  `"plugins`": [`"$PLUGIN_PATH`"],
+  `"printWidth`": 120,
   `"tabWidth`": 2,
-  `"trailingComma`": `"es5`",
-  `"printWidth`": 100,
-  `"plugins`": [`"$PLUGIN_PATH`"]
+  `"useTabs`": false,
+  `"semi`": true,
+  `"singleQuote`": false,
+  `"quoteProps`": `"as-needed`",
+  `"trailingComma`": `"none`",
+  `"bracketSpacing`": true,
+  `"bracketSameLine`": true,
+  `"arrowParens`": `"always`",
+  `"htmlWhitespaceSensitivity`": `"css`",
+  `"singleAttributePerLine`": true,
+  `"endOfLine`": `"lf`",
+  `"embeddedLanguageFormatting`": `"auto`",
+  `"overrides`": [
+    {
+      `"files`": [`"*.html`", `"*.ejs`"],
+      `"options`": {
+        `"printWidth`": 99999
+      }
+    }
+  ]
 }"
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false

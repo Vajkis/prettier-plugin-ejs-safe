@@ -7,7 +7,7 @@
 set -e
 
 PLUGIN_NAME="prettier-plugin-ejs-safe"
-CONFIG_PATH="$HOME/.prettierrc.json"
+CONFIG_PATH="$HOME/.prettierrc"
 
 echo ""
 echo "Installing global Prettier + EJS plugin..."
@@ -22,12 +22,29 @@ PLUGIN_PATH="$(npm root -g)/$PLUGIN_NAME/index.js"
 # 3. Write config with absolute plugin path
 cat > "$CONFIG_PATH" << EOF
 {
-  "semi": true,
-  "singleQuote": true,
+  "plugins": ["$PLUGIN_PATH"],
+  "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "plugins": ["$PLUGIN_PATH"]
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "arrowParens": "always",
+  "htmlWhitespaceSensitivity": "css",
+  "singleAttributePerLine": true,
+  "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
+  "overrides": [
+    {
+      "files": ["*.html", "*.ejs"],
+      "options": {
+        "printWidth": 99999
+      }
+    }
+  ]
 }
 EOF
 
