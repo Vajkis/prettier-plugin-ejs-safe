@@ -31,7 +31,7 @@ Original              Placeholder              After formatting     Restored
 
 ## Team setup
 
-Run once on a new machine. The script installs the plugin globally, resolves the correct plugin path for that machine, and writes `~/.prettierrc.json` automatically.
+Run once on a new machine. The script installs the plugin globally, resolves the correct plugin path for that machine, and writes `~/.prettierrc` automatically.
 
 **Windows:**
 ```powershell
@@ -47,7 +47,7 @@ After running, add to VS Code User Settings (`Ctrl+Shift+P` → `Open User Setti
 
 ```json
 {
-  "prettier.configPath": "C:\\Users\\YourName\\.prettierrc.json",
+  "prettier.configPath": "C:\\Users\\YourName\\.prettierrc",
   "[ejs]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
@@ -61,12 +61,12 @@ The exact `prettier.configPath` value is printed by the setup script after it ru
 
 1. Installs `prettier-plugin-ejs-safe` globally — `prettier` is included as a dependency, no separate install needed
 2. Finds the plugin path on this machine using `npm root -g`
-3. Writes `~/.prettierrc.json` with the absolute plugin path
+3. Writes `~/.prettierrc` with the absolute plugin path
 
 ## CLI / CI usage
 
 ```bash
-prettier --config ~/.prettierrc.json --write "**/*.ejs"
+prettier --config ~/.prettierrc --write "**/*.ejs"
 ```
 
 ## Example

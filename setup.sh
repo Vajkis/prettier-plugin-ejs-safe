@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# setup-prettier.sh (Mac / Linux)
+# setup.sh (Mac / Linux)
 # Run once on a new machine:
 #
-#   chmod +x setup-prettier.sh && ./setup-prettier.sh
+#   chmod +x setup.sh && ./setup.sh
 
 set -e
 
