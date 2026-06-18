@@ -31,7 +31,7 @@ $config = "{
   `"bracketSameLine`": true,
   `"arrowParens`": `"always`",
   `"htmlWhitespaceSensitivity`": `"css`",
-  `"singleAttributePerLine`": true,
+  `"singleAttributePerLine`": false,
   `"endOfLine`": `"lf`",
   `"embeddedLanguageFormatting`": `"auto`",
   `"overrides`": [
