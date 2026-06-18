@@ -1,8 +1,27 @@
 {
-  "semi": true,
-  "singleQuote": true,
+  "plugins": [
+    "ABSOLUTE_PLUGIN_PATH_INSERTED_BY_SETUP_SCRIPT"
+  ],
+  "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 99999,
-  "plugins": ["prettier-plugin-ejs-safe"]
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "arrowParens": "always",
+  "htmlWhitespaceSensitivity": "css",
+  "singleAttributePerLine": true,
+  "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
+  "overrides": [
+    {
+      "files": ["*.html", "*.ejs"],
+      "options": {
+        "printWidth": 99999
+      }
+    }
+  ]
 }

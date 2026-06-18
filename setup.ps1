@@ -1,4 +1,4 @@
-# setup.ps1
+# setup.ps1 (Windows)
 # Run once on a new machine:
 #
 #   .\setup.ps1
@@ -8,11 +8,11 @@ $PLUGIN_NAME = "prettier-plugin-ejs-safe"
 $CONFIG_PATH = "$HOME\.prettierrc.json"
 
 Write-Host ""
-Write-Host "Installing global Prettier + EJS plugin..." -ForegroundColor Cyan
+Write-Host "Installing $PLUGIN_NAME..." -ForegroundColor Cyan
 Write-Host ""
 
-# 1. Global install
-npm install -g prettier $PLUGIN_NAME
+# 1. Global install — prettier is installed automatically as a dependency
+npm install -g $PLUGIN_NAME
 
 # 2. Dynamically resolve full plugin entry file path for this machine
 $PLUGIN_PATH = "$(npm root -g)\$PLUGIN_NAME\index.js" -replace "\\", "/"
