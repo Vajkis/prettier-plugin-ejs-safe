@@ -11,23 +11,23 @@ The official `prettier-plugin-ejs` breaks EJS tags because it treats their conte
 Before formatting, this plugin **extracts** all EJS tags and replaces them with safe placeholders. After HTML formatting, it **restores** the original tags.
 
 ```
-Original              Placeholder              After formatting     Restored
-────────              ───────────              ────────────────     ────────
-<% if (x) { %>  →  <!-- EJSBLOCK_0 -->   →  <!-- EJSBLOCK_0 -->  →  <% if (x) { %>
-<%= name %>      →  EJSINLINE_1          →  EJSINLINE_1          →  <%= name %>
+Original           Placeholder             After formatting        Restored
+─────────          ─────────               ─────────               ─────────
+<% if (x) { %>  →  <!-- EJSBLOCK_0 -->  →  <!-- EJSBLOCK_0 -->  →  <% if (x) { %>
+<%= name %>     →  EJSINLINE_1          →  EJSINLINE_1          →  <%= name %>
 ```
 
 ## Supported EJS tag types
 
-| Tag | Description |
-|-----|-------------|
-| `<% code %>` | Scriptlet (control flow) |
-| `<%= expr %>` | HTML-escaped output |
-| `<%- expr %>` | Unescaped output |
-| `<%# comment %>` | Comment (no output) |
-| `<%_ code %>` | Whitespace-slurping scriptlet |
-| `<% code -%>` | Trim newline after tag |
-| `<% code _%>` | Whitespace slurp after tag |
+| Tag              | Description                   |
+|------------------|-------------------------------|
+| `<% code %>`     | Scriptlet (control flow)      |
+| `<%= expr %>`    | HTML-escaped output           |
+| `<%- expr %>`    | Unescaped output              |
+| `<%# comment %>` | Comment (no output)           |
+| `<%_ code %>`    | Whitespace-slurping scriptlet |
+| `<% code -%>`    | Trim newline after tag        |
+| `<% code _%>`    | Whitespace slurp after tag    |
 
 ## Team setup
 
