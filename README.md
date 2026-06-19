@@ -20,7 +20,7 @@ Original           Placeholder             After formatting        Restored
 ## Supported EJS tag types
 
 | Tag              | Description                   |
-|------------------|-------------------------------|
+| ---------------- | ----------------------------- |
 | `<% code %>`     | Scriptlet (control flow)      |
 | `<%= expr %>`    | HTML-escaped output           |
 | `<%- expr %>`    | Unescaped output              |
@@ -29,16 +29,55 @@ Original           Placeholder             After formatting        Restored
 | `<% code -%>`    | Trim newline after tag        |
 | `<% code _%>`    | Whitespace slurp after tag    |
 
+## Head/foot partials — `ignoreTags`
+
+EJS projects are often split into a "head" partial that opens shell tags (`<html>`, `<body>`, ...) and a "foot" partial that closes them. Each partial is invalid HTML on its own: Prettier's HTML parser either silently inserts the missing closing tag (unclosed open tag) or throws a parse error (closing tag with no matching open).
+
+`ignoreTags` removes specific tag names from HTML parsing entirely — their open/close tags pass through untouched, exactly as written, with no auto-closing and no validation.
+
+| Value                  | Effect                                                         |
+| ---------------------- | -------------------------------------------------------------- |
+| `["none"]` _(default)_ | No tags ignored — normal HTML parsing.                         |
+| `["all"]`              | Every tag is left untouched (no structural formatting at all). |
+| `["html", "body"]`     | Only the listed tag names are left untouched.                  |
+
+```json
+// head.prettierrc — for files that open shell tags
+{
+  "plugins": ["..."],
+  "ignoreTags": ["html", "body"]
+}
+```
+
+Ignored tags still count toward indentation — their children are indented as if the tag were really there, even though it's never parsed as one. This is computed per file from that file's own ignored tags only: `head.ejs` only knows it opens `<html>`/`<body>`, and `foot.ejs` only knows it closes them, but both land on the same indentation because each is shifted so its content never goes above column 0.
+
+```ejs
+<!-- head.ejs -->
+<html lang="en">
+  <head>
+    <title><%= title %></title>
+  </head>
+  <body>
+
+<!-- foot.ejs -->
+  </body>
+</html>
+```
+
+Any tag not listed (like `<div>` above) still needs to be balanced _within that same file_ — list every tag that spans across your head/foot split, not just `html`/`body`.
+
 ## Team setup
 
 Run once on a new machine. The script installs the plugin globally, resolves the correct plugin path for that machine, and writes `~/.prettierrc` automatically.
 
 **Windows:**
+
 ```powershell
 .\setup.ps1
 ```
 
 **Mac / Linux:**
+
 ```bash
 chmod +x setup.sh && ./setup.sh
 ```
@@ -72,11 +111,13 @@ prettier --config ~/.prettierrc --write "**/*.ejs"
 ## Example
 
 **Before:**
+
 ```ejs
 <% if (users.length > 0) { %><ul><% users.forEach(function(user){ %><li class="<%= user.role %>"><%= user.name %></li><% }) %></ul><% } %>
 ```
 
 **After:**
+
 ```ejs
 <% if (users.length > 0) { %>
 <ul>

@@ -37,6 +37,7 @@ cat > "$CONFIG_PATH" << EOF
   "singleAttributePerLine": false,
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
+  "ignoreTags": ["html", "body"],
   "overrides": [
     {
       "files": ["*.html", "*.ejs"],

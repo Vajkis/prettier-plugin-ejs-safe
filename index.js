@@ -25,6 +25,50 @@ const BUILTIN_PLUGINS = [htmlPlugin, babelPlugin, estreePlugin, postcssPlugin];
 //
 const EJS_TAG_RE = /<%(?:[=\-_#])?[\s\S]*?[-_]?%>/g;
 
+// ─── ignoreTags resolution ──────────────────────────────────────────────────
+//
+// EJS templates are often split into a "head" partial that opens shell tags
+// (<html>, <body>, ...) and a "foot" partial that closes them. Each partial is
+// invalid HTML on its own, which makes Prettier's HTML parser either insert
+// the missing closing tag (unclosed open tag) or throw a parse error
+// (closing tag with no matching open). `ignoreTags` lets specific tag names
+// bypass the HTML parser entirely so neither happens.
+//
+// Matches any opening/closing tag for a given tag name, e.g. for "html":
+// <html>, <html lang="en">, </html>. Built fresh per resolved tag list.
+function buildTagNameRegex(names) {
+  const alternation = names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  return new RegExp(`<\\/?(?:${alternation})\\b[^>]*>`, "gi");
+}
+
+// Matches any HTML tag at all — used for ignoreTags: ["all"].
+const IGNORE_ALL_TAG_RE = /<\/?[a-zA-Z][a-zA-Z0-9-]*\b[^>]*>/g;
+
+function resolveIgnoreTagRegex(ignoreTags) {
+  const list = Array.isArray(ignoreTags) ? ignoreTags : [];
+  if (list.includes("all")) return IGNORE_ALL_TAG_RE;
+  const names = list.filter((name) => name !== "none");
+  return names.length === 0 ? null : buildTagNameRegex(names);
+}
+
+// Void elements never get a closing tag, so they must not affect virtual depth
+// even when ignoreTags matches them by name (e.g. ignoreTags: ["all"]).
+const VOID_ELEMENTS = new Set([
+  "area", "base", "br", "col", "embed", "hr", "img", "input",
+  "link", "meta", "param", "source", "track", "wbr",
+]);
+
+// Classifies a single ignored-tag match for virtual-depth tracking:
+//   "close"   — </tag>, decreases depth
+//   "open"    — <tag>, increases depth
+//   "neutral" — self-closed (<tag/>) or a known void element — no depth change
+function classifyIgnoredTag(matchText) {
+  if (matchText.startsWith("</")) return "close";
+  if (/\/\s*>$/.test(matchText)) return "neutral";
+  const name = /^<\s*([a-zA-Z][a-zA-Z0-9-]*)/.exec(matchText)?.[1].toLowerCase();
+  return VOID_ELEMENTS.has(name) ? "neutral" : "open";
+}
+
 // ─── Standalone detection ─────────────────────────────────────────────────
 //
 // A tag is "standalone" when it is the only non-whitespace content on its line.
@@ -56,19 +100,73 @@ function isStandaloneLine(src, tagStart, tagLen) {
 //     Valid in attribute values and text nodes; Prettier won't split a
 //     continuous alphanumeric word token across lines.
 //
-function extractTags(src) {
-  const tags = [];
-  EJS_TAG_RE.lastIndex = 0;
-
-  const processed = src.replace(EJS_TAG_RE, (match, offset) => {
+// `ignoreTagRe`, when given, is applied as a second pass over the same text
+// using the same placeholder scheme — this is how `ignoreTags` keeps specific
+// HTML tags (e.g. unclosed <html>/<body> in a head/foot partial) out of the
+// HTML parser's reach entirely.
+//
+// `onMatch`, when given, is called for every match with its placeholder index
+// and whether it landed as a standalone block — used to classify ignored tags
+// for virtual-depth tracking (see applyVirtualIndent).
+function extractWithPattern(src, re, tags, onMatch) {
+  if (!re) return src;
+  re.lastIndex = 0;
+  return src.replace(re, (match, offset) => {
     const idx = tags.length;
     tags.push(match);
-    return isStandaloneLine(src, offset, match.length)
-      ? `<!-- EJSBLOCK_${idx} -->`
-      : `EJSINLINE_${idx}`;
+    const standalone = isStandaloneLine(src, offset, match.length);
+    onMatch?.(idx, match, standalone);
+    return standalone ? `<!-- EJSBLOCK_${idx} -->` : `EJSINLINE_${idx}`;
   });
+}
 
-  return { processed, tags };
+function extractTags(src, ignoreTagRe) {
+  const tags = [];
+  const tagKinds = new Map();
+  const afterEjs = extractWithPattern(src, EJS_TAG_RE, tags);
+  const processed = extractWithPattern(afterEjs, ignoreTagRe, tags, (idx, match, standalone) => {
+    if (standalone) tagKinds.set(idx, classifyIgnoredTag(match));
+  });
+  return { processed, tags, tagKinds };
+}
+
+// ─── Virtual indentation for ignored tags ──────────────────────────────────
+//
+// Ignored tags are invisible to the HTML parser, so content that would
+// normally be their children comes back as root-level siblings — flush left.
+// This restores the indentation those children would have had, by replaying
+// the open/close sequence of ignored tags as a depth counter over the
+// formatted output (operating on placeholders, before restoreTags runs).
+//
+// A head/foot split starts mid-sequence (e.g. a foot file is pure closes with
+// no matching opens in that file), so depth can go negative; shifting
+// everything up by the lowest depth reached keeps indentation non-negative
+// without needing any cross-file information.
+const BLOCK_PLACEHOLDER_RE = /^<!--\s*EJSBLOCK_(\d+)\s*-->$/;
+
+function applyVirtualIndent(html, tagKinds, indentUnit) {
+  if (tagKinds.size === 0) return html;
+
+  const lines = html.split("\n");
+  const lineDepths = new Array(lines.length);
+  let depth = 0;
+  let minDepth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const kind = tagKinds.get(+BLOCK_PLACEHOLDER_RE.exec(lines[i].trim())?.[1]);
+    if (kind === "close") depth -= 1;
+    lineDepths[i] = depth;
+    if (depth < minDepth) minDepth = depth;
+    if (kind === "open") depth += 1;
+  }
+
+  const baseline = -minDepth;
+  return lines
+    .map((line, i) => {
+      const finalDepth = lineDepths[i] + baseline;
+      return finalDepth > 0 && line.trim() !== "" ? indentUnit.repeat(finalDepth) + line : line;
+    })
+    .join("\n");
 }
 
 // ─── Tag restoration ──────────────────────────────────────────────────────
@@ -90,10 +188,22 @@ export const languages = [
   },
 ];
 
+export const options = {
+  ignoreTags: {
+    type: "string",
+    array: true,
+    category: "EJS",
+    default: [{ value: ["none"] }],
+    description:
+      'Tag names left completely untouched by the HTML parser — not auto-closed, not validated. Use ["none"] (default), ["all"], or a list like ["html", "body"]. Needed for EJS head/foot partials where shell tags are opened in one file and closed in another.',
+  },
+};
+
 export const parsers = {
   ejs: {
     async parse(text, options) {
-      const { processed, tags } = extractTags(text);
+      const ignoreTagRe = resolveIgnoreTagRegex(options.ignoreTags);
+      const { processed, tags, tagKinds } = extractTags(text, ignoreTagRe);
 
       // Format the placeholder-substituted content as HTML.
       // Only built-in plugins are passed — this prevents infinite recursion
@@ -109,9 +219,12 @@ export const parsers = {
         singleAttributePerLine: options.singleAttributePerLine,
       });
 
+      const indentUnit = options.useTabs ? "\t" : " ".repeat(options.tabWidth ?? 2);
+      const indented = applyVirtualIndent(htmlFormatted, tagKinds, indentUnit);
+
       return {
         type: "ejs-root",
-        output: restoreTags(htmlFormatted, tags).trimEnd(),
+        output: restoreTags(indented, tags).trimEnd(),
         start: 0,
         end: text.length,
       };
