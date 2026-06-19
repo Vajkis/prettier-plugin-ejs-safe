@@ -4,7 +4,7 @@ Prettier plugin for EJS templates — formats the HTML structure while **complet
 
 ## The problem
 
-The official `prettier-plugin-ejs` breaks EJS tags because it treats their content as HTML and reformats it without any special handling.
+The [prettier-plugin-ejs](https://www.npmjs.com/package/prettier-plugin-ejs) breaks EJS tags because it treats their content as HTML and reformats it without any special handling.
 
 ## The solution
 
@@ -59,7 +59,7 @@ Ignored tags still count toward indentation — their children are indented as i
   </head>
   <body>
 
-<!-- foot.ejs -->
+    <!-- foot.ejs -->
   </body>
 </html>
 ```
@@ -116,7 +116,13 @@ prettier --config ~/.prettierrc --write "**/*.ejs"
 **Before:**
 
 ```ejs
-<% if (users.length > 0) { %><ul><% users.forEach(function(user){ %><li class="<%= user.role %>"><%= user.name %></li><% }) %></ul><% } %>
+<% if (users.length > 0) { %>
+<ul>
+  <% users.forEach(function(user){ %>
+  <li class="<%= user.role %>"><%= user.name %></li>
+  <% }) %>
+</ul>
+<% } %>
 ```
 
 **After:**

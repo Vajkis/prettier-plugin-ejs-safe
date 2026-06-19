@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-ejs-safe",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Prettier plugin for EJS templates — formats HTML, preserves all EJS tags untouched",
   "type": "module",
   "main": "./index.js",
