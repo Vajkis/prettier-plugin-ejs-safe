@@ -70,26 +70,29 @@ Any tag not listed (like `<div>` above) still needs to be balanced _within that 
 
 Run once on a new machine. The script installs the plugin globally, resolves the correct plugin path for that machine, and writes `~/.prettierrc` automatically.
 
+The scripts aren't published with the npm package — download them from the [latest release](https://github.com/Vajkis/prettier-plugin-ejs-safe/releases/latest):
+
 **Windows:**
 
-```powershell
-.\setup.ps1
-```
+1. Download [`setup.bat`](https://github.com/Vajkis/prettier-plugin-ejs-safe/releases/latest/download/setup.bat)
+2. Double-click it to run — no terminal needed.
 
 **Mac / Linux:**
 
-```bash
-chmod +x setup.sh && ./setup.sh
-```
+1. Download [`setup.sh`](https://github.com/Vajkis/prettier-plugin-ejs-safe/releases/latest/download/setup.sh)
+2. Run:
+   ```bash
+   chmod +x setup.sh && ./setup.sh
+   ```
 
 After running, add to VS Code User Settings (`Ctrl+Shift+P` → `Open User Settings JSON`):
 
 ```json
 {
   "prettier.configPath": "C:\\Users\\YourName\\.prettierrc",
+  "prettier.resolveGlobalModules": true,
   "[ejs]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
 ```
