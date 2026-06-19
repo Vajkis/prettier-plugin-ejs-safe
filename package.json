@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-ejs-safe",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Prettier plugin for EJS templates — formats HTML, preserves all EJS tags untouched",
   "type": "module",
   "main": "./index.js",
@@ -18,5 +18,9 @@
   "dependencies": {
     "prettier": ">=3.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vajkis/prettier-plugin-ejs-safe.git"
+  }
 }
