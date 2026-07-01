@@ -25,7 +25,7 @@ cat > "$CONFIG_PATH" << EOF
   "plugins": ["$PLUGIN_PATH"],
   "printWidth": 120,
   "tabWidth": 2,
-  "useTabs": true,
+  "useTabs": false,
   "semi": true,
   "singleQuote": true,
   "quoteProps": "as-needed",

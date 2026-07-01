@@ -33,7 +33,7 @@ echo {
 echo   "plugins": ["%PLUGIN_PATH%"],
 echo   "printWidth": 120,
 echo   "tabWidth": 2,
-echo   "useTabs": true,
+echo   "useTabs": false,
 echo   "semi": true,
 echo   "singleQuote": true,
 echo   "quoteProps": "as-needed",
